@@ -44,7 +44,7 @@ use rule all from other_workflow as other_all with:
         ),
         expand("{outdir}/GW_summary.csv", outdir=out_dir
         ),
-        expand("{outdir}/config_gw.yml", outdir=out_dir),
+#        expand("{outdir}/config_gw.yml", outdir=out_dir),
 
 rule copy_config:
     output:
