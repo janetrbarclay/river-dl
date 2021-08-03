@@ -124,8 +124,8 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
 
         
         if waterSum.shape[0]>0:
-            print(thisSeg)
-            print(waterSum)
+            #print(thisSeg)
+            #print(waterSum)
             #get the air temp properties
             amp, phi, amp_low, amp_high, phi_low, phi_high = amp_phi(thisData['date'].values[thisData.waterYear.isin(waterSum.waterYear)],thisData[air_temp_col][:,i].values[thisData.waterYear.isin(waterSum.waterYear)],isWater=False)
             air_amp.append(amp)
@@ -165,19 +165,19 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
                     amp, phi, amp_low, amp_high, phi_low, phi_high = amp_phi(waterDF.date.values,waterDF.tave_water.values,isWater=True)
 
         else:
-            amp = np.nan
-            phi = np.nan
-            amp_low = np.nan
-            amp_high = np.nan
-            phi_low = np.nan
-            phi_high = np.nan
             amp, phi, amp_low, amp_high, phi_low, phi_high = amp_phi(thisData['date'].values,thisData[air_temp_col][:,i].values,isWater=False)
             air_amp.append(amp)
             air_amp_low.append(amp_low)
             air_amp_high.append(amp_high)
             air_phi.append(phi)
             air_phi_low.append(phi_low)
-            air_phi_high.append(phi_high)            
+            air_phi_high.append(phi_high)      
+            amp = np.nan
+            phi = np.nan
+            amp_low = np.nan
+            amp_high = np.nan
+            phi_low = np.nan
+            phi_high = np.nan
             water_amp_pbm.append(np.nan)
             water_amp_low_pbm.append(np.nan)
             water_amp_high_pbm.append(np.nan)
@@ -230,6 +230,7 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
     delPhi_pbm = [(water_phi_pbm[x]-air_phi[x])*365/(2*math.pi) for x in range(len(water_amp_pbm))]
     
     tempDF = pd.DataFrame({'seg_id_nat':thisData['seg_id_nat'].values, 'air_amp':air_amp,'air_phi':air_phi,'water_amp_obs':water_amp_obs,'water_phi_obs':water_phi_obs,'Ar_obs':Ar_obs,'delPhi_obs':delPhi_obs,'Ar_low_obs':Ar_low_obs, 'Ar_high_obs':Ar_high_obs,'delPhi_low_obs':delPhi_low_obs,'delPhi_high_obs':delPhi_high_obs,'water_amp_pbm':water_amp_pbm,'water_phi_pbm':water_phi_pbm,'Ar_pbm':Ar_pbm,'delPhi_pbm':delPhi_pbm})
+    print(tempDF.head())
     return tempDF
 
 def prep_annual_signal_data(
