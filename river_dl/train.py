@@ -32,6 +32,7 @@ def train_model(
     loss_type="GW",
     seed=None,
     dropout=0,
+    lamb1=0,
     lamb2=0,
     lamb3=0,
     recurrent_dropout=0,
@@ -158,7 +159,7 @@ def train_model(
             gw_mean = io_data['GW_mean']
             gw_std = io_data['GW_std']
             
-            model.compile(optimizer_ft, loss=weighted_masked_rmse_gw(temp_index,temp_mean, temp_sd,gw_mean=gw_mean, gw_std = gw_std,lamb=1,lamb2=lamb2,lamb3=lamb3))
+            model.compile(optimizer_ft, loss=weighted_masked_rmse_gw(temp_index,temp_mean, temp_sd,gw_mean=gw_mean, gw_std = gw_std,lamb=lamb1,lamb2=lamb2,lamb3=lamb3))
         elif model_type == "rgcn":
             model.compile(optimizer_ft, loss=loss_func)
 
