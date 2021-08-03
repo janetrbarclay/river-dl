@@ -230,7 +230,6 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
     delPhi_pbm = [(water_phi_pbm[x]-air_phi[x])*365/(2*math.pi) for x in range(len(water_amp_pbm))]
     
     tempDF = pd.DataFrame({'seg_id_nat':thisData['seg_id_nat'].values, 'air_amp':air_amp,'air_phi':air_phi,'water_amp_obs':water_amp_obs,'water_phi_obs':water_phi_obs,'Ar_obs':Ar_obs,'delPhi_obs':delPhi_obs,'Ar_low_obs':Ar_low_obs, 'Ar_high_obs':Ar_high_obs,'delPhi_low_obs':delPhi_low_obs,'delPhi_high_obs':delPhi_high_obs,'water_amp_pbm':water_amp_pbm,'water_phi_pbm':water_phi_pbm,'Ar_pbm':Ar_pbm,'delPhi_pbm':delPhi_pbm})
-    print(tempDF.head())
     return tempDF
 
 def prep_annual_signal_data(
