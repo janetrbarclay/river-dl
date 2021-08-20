@@ -293,7 +293,7 @@ def prep_annual_signal_data(
     obs.append(tempFile)
     
     #using an outer join keeps all data, but requires the assumption that the air temp properties from PRMS (WY1981 - 2016) were valid for WY 2017-2020
-    obs=xr.merge(obs,join="left")
+    obs=xr.merge(obs,join="outer")
     obs=obs[[air_temp_col,water_temp_pbm_col,water_temp_obs_col]]
     obs = obs.rename({water_temp_pbm_col: "seg_tave_water_pbm"})
     obs = obs.rename({water_temp_obs_col: "seg_tave_water"})
