@@ -1,9 +1,9 @@
 # Input files
 obs_file: "data_DRB/obs_temp_flow_full"
-sntemp_file: "data_DRB/uncal_sntemp_input_output"
+sntemp_file: "data_DRB/sntemp_inputs_outputs_drb"
 dist_matrix: "data_DRB/distance_matrix.npz"
 
-out_dir: "output_DRB_updatedInputs"
+out_dir: "output_DRB_updatedInputs_sens"
 
 
 code_dir: "river_dl"
@@ -15,7 +15,7 @@ primary_variable: "temp"
 lambdas: [1,1]
 
 #lambdas_gw are hyper params for weighting the rmses of Ar (amplitude ratio) and deltaPhi (phase difference)
-lambdas_gw: [1, 1]
+lambdas_gw: [0, 0]
 
 
 train_start_date:
@@ -34,7 +34,7 @@ test_end_date:
   - '2021-09-30'
 
 
-pt_epochs: 10
-ft_epochs: 10
+pt_epochs: 200
+ft_epochs: 100
 
 hidden_size: 20
