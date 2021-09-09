@@ -126,7 +126,6 @@ def train_model(
         x_trn_pre = io_data["x_trn"]
         # combine with weights to pass to loss function
         y_trn_pre = io_data["y_pre_trn"]
-
         model.compile(optimizer_pre, loss=loss_func_pre)
 
         csv_log_pre = tf.keras.callbacks.CSVLogger(

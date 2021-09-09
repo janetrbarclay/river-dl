@@ -194,9 +194,9 @@ def weighted_masked_rmse_gw(loss_function_main, temp_index,temp_mean, temp_sd,gw
         
         rmse_loss = loss_function_main(data[:,:,:num_task],y_pred) + lambda_Ar*rmse_Ar +lambda_delPhi*rmse_delPhi
 
-        #tf.debugging.assert_all_finite(
-        #    rmse_loss, 'Nans is a bad loss to have'
-        #)
+        tf.debugging.assert_all_finite(
+            rmse_loss, 'Nans is a bad loss to have'
+        )
         return rmse_loss
     return rmse_masked_combined_gw
 
