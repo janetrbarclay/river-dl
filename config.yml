@@ -2,13 +2,13 @@
 obs_file: "data_DRB/obs_temp_flow_full"
 sntemp_file: "data_DRB/sntemp_inputs_outputs_drb"
 dist_matrix: "data_DRB/distance_matrix.npz"
-out_dir: "output_DRB_updatedInputs_noGW_flow"
+out_dir: "output_DRB_updatedInputs_repeated_noGW_loss_test2"
 
 code_dir: "river_dl"
 
 x_vars: ["seg_rain", "seg_tave_air", "seginc_swrad", "seg_length", "seginc_potet", "seg_slope", "seg_humid", "seg_elev"]
 
-lambdas: [0,1]
+lambdas: [1,0]
 
 
 train_start_date:

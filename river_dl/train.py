@@ -126,6 +126,16 @@ def train_model(
         x_trn_pre = io_data["x_trn"]
         # combine with weights to pass to loss function
         y_trn_pre = io_data["y_pre_trn"]
+        
+        print(np.sum(y_trn_pre[:,1]<(-10)))
+        waterTempIndex =  np.where(io_data['y_pre_vars']=='seg_tave_water')[0]
+        print(y_trn_pre.shape)
+        y_trn_pre[:, waterTempIndex] = np.where(y_trn_pre[:,waterTempIndex] > 40, np.nan, y_trn_pre[:,waterTempIndex])       
+        y_trn_pre[:, waterTempIndex] = np.where(y_trn_pre[:,waterTempIndex] < -10, np.nan, y_trn_pre[:,waterTempIndex])
+        print(np.sum(y_trn_pre[:,1]<(-10)))
+
+
+
         model.compile(optimizer_pre, loss=loss_func_pre)
 
         csv_log_pre = tf.keras.callbacks.CSVLogger(
@@ -167,7 +177,10 @@ def train_model(
 
         if "GW_trn_reshape" in io_data.files:
             temp_air_index = np.where(io_data['x_vars']=='seg_tave_air')[0]
+            print(io_data['y_obs_trn'].shape)
+            print(io_data['GW_trn_reshape'].shape)
             air_unscaled = io_data['x_trn'][:,:,temp_air_index]*io_data['x_std'][temp_air_index] +io_data['x_mean'][temp_air_index]
+            print(air_unscaled.shape)
             y_trn_obs = np.concatenate(
                 [io_data["y_obs_trn"], io_data["GW_trn_reshape"], air_unscaled], axis=2
             )

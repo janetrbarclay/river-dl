@@ -3,7 +3,11 @@ obs_file: "data_DRB/obs_temp_flow_full"
 sntemp_file: "data_DRB/sntemp_inputs_outputs_drb"
 dist_matrix: "data_DRB/distance_matrix.npz"
 
-out_dir: "output_DRB_updatedInputs_repeated_noGW"
+segment_col: "seg_id_nat"
+#segmentCSV: "../GW_Stream_Temp/out_MONTAGUE_drb1.04_mf6_20210713_250/CatchmentDischarge.csv"
+segmentCSV: "" 
+
+out_dir: "output_DRB_updatedInputs_test"
 
 
 code_dir: "river_dl"
