@@ -62,7 +62,6 @@ def train_model(
     """
 
 
-
     if tf.test.gpu_device_name():
         print("Default GPU Device: {}".format(tf.test.gpu_device_name()))
     else:
@@ -127,13 +126,6 @@ def train_model(
         # combine with weights to pass to loss function
         y_trn_pre = io_data["y_pre_trn"]
         
-        print(np.sum(y_trn_pre[:,1]<(-10)))
-        waterTempIndex =  np.where(io_data['y_pre_vars']=='seg_tave_water')[0]
-        print(y_trn_pre.shape)
-        y_trn_pre[:, waterTempIndex] = np.where(y_trn_pre[:,waterTempIndex] > 40, np.nan, y_trn_pre[:,waterTempIndex])       
-        y_trn_pre[:, waterTempIndex] = np.where(y_trn_pre[:,waterTempIndex] < -10, np.nan, y_trn_pre[:,waterTempIndex])
-        print(np.sum(y_trn_pre[:,1]<(-10)))
-
 
 
         model.compile(optimizer_pre, loss=loss_func_pre)
