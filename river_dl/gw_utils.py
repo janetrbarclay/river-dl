@@ -120,7 +120,7 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
     #get the phase and amplitude for air and water temps for each segment
     for i in range(len(thisData['seg_id_nat'])):
         thisSeg = thisData['seg_id_nat'][i].data
-
+        print(thisData)
         waterDF = pd.DataFrame({'date':thisData['date'].values,'tave_water':thisData[water_temp_obs_col][:,i].values})
         #require temps > 1 and <60 C for signal analysis
         waterDF.loc[(waterDF.tave_water<1)|(waterDF.tave_water>60),"tave_water"]=np.nan
@@ -288,7 +288,7 @@ def prep_annual_signal_data(
 
     #read in the observed temperature data and join to the SNTemp data
     obs = [ds_pre.sortby(["seg_id_nat","date"])]
-    tempFile = xr.open_zarr(obs_temper_file).transpose()
+    tempFile = xr.open_zarr(obs_temper_file)
     tempFile['seg_id_nat']=tempFile['seg_id_nat'].astype(int)
     if segs:
         tempFile = tempFile.loc[dict(seg_id_nat=segs)]
