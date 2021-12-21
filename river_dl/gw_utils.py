@@ -314,7 +314,9 @@ def prep_annual_signal_data(
         val_start_date,
         val_end_date,
         test_start_date,
-        test_end_date)
+        test_end_date,
+        lto=True,
+        lto_type='max')
 
     #get the annual signal properties for the training, validation, and testing data
     GW_trn = annual_temp_stats(obs_trn, reservoirSegs=reservoirSegs)

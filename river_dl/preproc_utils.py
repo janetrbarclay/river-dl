@@ -84,6 +84,8 @@ def separate_trn_tst(
     val_end_date,
     test_start_date,
     test_end_date,
+    lto=False,
+    lto_type = 'max',
 ):
     """
     separate the train data from the test data according to the start and end
@@ -105,15 +107,16 @@ def separate_trn_tst(
     :param test_end_date: [str or list] fmt: "YYYY-MM-DD"; date(s) to end test
     period (can have multiple discontinuous periods)
     """
-    train = sel_partition_data(
-        dataset, time_idx_name, train_start_date, train_end_date
-    )
-    val = sel_partition_data(
-        dataset, time_idx_name, val_start_date, val_end_date
-    )
-    test = sel_partition_data(
-        dataset, time_idx_name, test_start_date, test_end_date
-    )
+    if lto:
+        trn, tst, val = pull_lto_years('data_DRB/temperature_observations_drb.csv', test=lto_type)
+        train = sel_partition_data(dataset, time_idx_name, trn['start'],trn['end'])
+        val = sel_partition_data(dataset, time_idx_name, val['start'],val['end'])
+        test = sel_partition_data(dataset,time_idx_name, tst['start'],tst['end'])
+
+    else:
+        train = sel_partition_data(dataset,time_idx_name, train_start_date, train_end_date)
+        val = sel_partition_data(dataset,time_idx_name, val_start_date, val_end_date)
+        test = sel_partition_data(dataset,time_idx_name, test_start_date, test_end_date)
     return train, val, test
 
 
@@ -569,6 +572,8 @@ def prep_y_data(
         val_end_date,
         test_start_date,
         test_end_date,
+        lto=True,
+        lto_type = 'max'
     )
 
     if log_vars:
@@ -762,6 +767,8 @@ def prep_all_data(
         val_end_date,
         test_start_date,
         test_end_date,
+        lto=True,
+        lto_type = 'max'
     )
 
     x_scl, x_std, x_mean = scale(x_data)
@@ -1017,3 +1024,41 @@ def read_exclude_segs_file(exclude_file):
     with open(exclude_file, "r") as s:
         d = yaml.safe_load(s)
     return [val for key, val in d.items()]
+
+def pull_lto_years(obs, ntest = 10, nval = 5, test='max'):
+    """
+    Pull years with min and max temperature values for leave time out tests
+    :param obs: [csv] temperature observations to pull min and max years from
+    :param ntest: [int] number of years to set aside for testing
+    :param nval: [int] number of years to set aside for validation
+    :parm test: [str] whether to set aside max temp years or min temp years for testing (option = 'max','min')
+    """
+    temp_df = pd.read_csv(obs)
+    temp_df.date = pd.to_datetime(temp_df.date)
+    temp_df = temp_df[temp_df.date >= '1980-10-01']
+
+    temp_df['water_year'] = temp_df.date.dt.year.where(temp_df.date.dt.month < 10, temp_df.date.dt.year + 1)
+    temp_df['month'] = temp_df.date.dt.month
+    temp_df = temp_df[temp_df.month.isin([6, 7, 8])]
+    mean_temp = temp_df[['mean_temp_c', 'water_year']].groupby('water_year').mean()
+    if test=='max':
+        years_test = mean_temp.sort_values('mean_temp_c', ascending=False)[0:ntest]
+    if test=='min':
+        years_test = mean_temp.sort_values('mean_temp_c')[0:ntest]
+
+    mean_temp = mean_temp[~mean_temp.index.isin(years_test.index)]
+
+    ## We prefer consecutive years, we'll say 2000 and next five years that aren't in test
+    ## This overlaps with original val years and has some back to back years for hot runs
+    years_val = mean_temp.loc[mean_temp.index > 2000].iloc[0:nval]
+
+    years_train = mean_temp[~mean_temp.index.isin(years_val.index)]
+
+    def wy_to_date(wys):
+        return {'start': [f"{i-1}-10-01" for i in wys.index], 'end': [f"{i}-9-30" for i in wys.index]}
+
+    train_out = wy_to_date(years_train)
+    test_out = wy_to_date(years_test)
+    val_out = wy_to_date(years_val)
+
+    return train_out, test_out, val_out
