@@ -511,19 +511,19 @@ def calculate_observations_by_batch(GW_Arr,dates, id_data,data, temp_data, temp_
     GW_Arr[noNA,:,2]=np.repeat(Tmean_pred_fft,GW_Arr.shape[1]).reshape(GW_Arr[noNA,:,0].shape)
 
     
-    #get the batches that have NA's for the observed Ar / delPhi and, if possible, use the mean from the other batches for the same reach
-    batchNA = np.where(~np.isfinite(GW_Arr[:,0,0]))[0] #batches with no obs gw data
-    batchNotNA = np.where(np.isfinite(GW_Arr[:,0,0]))[0] #batches with obs gw data
-    idsNA = np.unique(id_data[batchNA,0,0]) #segment id's with missing gw data
-    idsNotNA = np.unique(id_data[batchNotNA,0,0]) #segment id's with gw data
-    batchWithData = np.where(np.isin(id_data[:,0,0],idsNotNA))[0] #batches on segments that have data (those that could be updated and those that already have data)
-    batchToUpdate=[x for x in batchNA if x in batchWithData] #batches that can be updated
-    idsToUpdate = np.unique(id_data[batchToUpdate,0,0]) #segment id's that can be updated from other batches
+    # #get the batches that have NA's for the observed Ar / delPhi and, if possible, use the mean from the other batches for the same reach
+    # batchNA = np.where(~np.isfinite(GW_Arr[:,0,0]))[0] #batches with no obs gw data
+    # batchNotNA = np.where(np.isfinite(GW_Arr[:,0,0]))[0] #batches with obs gw data
+    # idsNA = np.unique(id_data[batchNA,0,0]) #segment id's with missing gw data
+    # idsNotNA = np.unique(id_data[batchNotNA,0,0]) #segment id's with gw data
+    # batchWithData = np.where(np.isin(id_data[:,0,0],idsNotNA))[0] #batches on segments that have data (those that could be updated and those that already have data)
+    # batchToUpdate=[x for x in batchNA if x in batchWithData] #batches that can be updated
+    # idsToUpdate = np.unique(id_data[batchToUpdate,0,0]) #segment id's that can be updated from other batches
 
-    for idx in idsToUpdate:
-        GW_Arr[:,:,0][(id_data[:,:,0]==idx)&~np.isfinite(GW_Arr[:,:,0])]=np.nanmean(GW_Arr[:,:,0][id_data[:,:,0]==idx])
-        GW_Arr[:,:,1][(id_data[:,:,0]==idx)&~np.isfinite(GW_Arr[:,:,0])]=np.nanmean(GW_Arr[:,:,1][id_data[:,:,0]==idx])
-        GW_Arr[:,:,2][(id_data[:,:,0]==idx)&~np.isfinite(GW_Arr[:,:,0])]=np.nanmean(GW_Arr[:,:,2][id_data[:,:,0]==idx])
+    # for idx in idsToUpdate:
+        # GW_Arr[:,:,0][(id_data[:,:,0]==idx)&~np.isfinite(GW_Arr[:,:,0])]=np.nanmean(GW_Arr[:,:,0][id_data[:,:,0]==idx])
+        # GW_Arr[:,:,1][(id_data[:,:,0]==idx)&~np.isfinite(GW_Arr[:,:,0])]=np.nanmean(GW_Arr[:,:,1][id_data[:,:,0]==idx])
+        # GW_Arr[:,:,2][(id_data[:,:,0]==idx)&~np.isfinite(GW_Arr[:,:,0])]=np.nanmean(GW_Arr[:,:,2][id_data[:,:,0]==idx])
         
     
 
