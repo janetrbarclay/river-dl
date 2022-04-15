@@ -763,6 +763,10 @@ def prep_all_data(
     catch_prop_file=None,
     exclude_file=None,
     log_y_vars=False,
+    x_mean = None,
+    x_std = None,
+    y_mean = None,
+    y_std = None,
     out_file=None,
     segs=None,
     normalize_y=True,
@@ -819,6 +823,10 @@ def prep_all_data(
     :param exclude_file: [str] path to exclude file
     :param log_y_vars: [bool] whether or not to take the log of discharge in
     training
+    :param x_std: [dataset of float] x standard deviations
+    :param x_mean: [dataset of float] x means
+    :param y_mean: [float] mean of the y data (for scaling)
+    :param y_std: [float] std deviation of the y data (for scaling)
     :param segs: [list-like] which segments to prepare the data for
     :param normalize_y: [bool] whether or not to normalize the y_dataset values
     :param out_file: [str] file to where the values will be written
@@ -878,7 +886,7 @@ def prep_all_data(
         test_end_date,
     )
 
-    x_trn_scl, x_std, x_mean = scale(x_trn)
+    x_trn_scl, x_std, x_mean = scale(x_trn,std=x_std,mean=x_mean)
 
     x_scl, _, _ = scale(x_data,std=x_std,mean=x_mean)
 
@@ -1001,6 +1009,8 @@ def prep_all_data(
             exclude_file=exclude_file,
             normalize_y=normalize_y,
             y_type="obs",
+            y_std=y_std,
+            y_mean=y_mean,
             trn_offset = trn_offset,
             tst_val_offset = tst_val_offset
         )
