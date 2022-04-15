@@ -758,6 +758,8 @@ def prep_all_data(
     distfile=None,
     dist_idx_name="rowcolnames",
     dist_type="updown",
+    dist_mean=None,
+    dist_std=None,
     catch_prop_file=None,
     exclude_file=None,
     log_y_vars=False,
@@ -810,6 +812,8 @@ def prep_all_data(
     the name of an array in the distance matrix .npz file
     :param dist_type: [str] type of distance matrix ("upstream", "downstream" or
     "updown")
+    :param dist_mean: [float] mean of the distance matrix (used for scaling)
+    :param dist_std: [float] standard deviation of the distance matrix (for scaling)
     :param catch_prop_file: [str] the path to the catchment properties file. If
     left unfilled, the catchment properties will not be included as predictors
     :param exclude_file: [str] path to exclude file
@@ -966,11 +970,13 @@ def prep_all_data(
         ),
     }
     if distfile:
-        x_data_dict["dist_matrix"] = prep_adj_matrix(
+        x_data_dict["dist_matrix"],x_data_dict["dist_mean"] ,x_data_dict["dist_std"] = prep_adj_matrix(
             infile=distfile,
             dist_type=dist_type,
             dist_idx_name=dist_idx_name,
             segs=segs,
+            mean_adj = dist_mean,
+            std_adj = dist_std
         )
 
     y_obs_data = {}
@@ -1071,7 +1077,7 @@ def sort_dist_matrix(mat, row_col_names, segs=None):
     return df
 
 
-def prep_adj_matrix(infile, dist_type, dist_idx_name, segs=None, out_file=None):
+def prep_adj_matrix(infile, dist_type, dist_idx_name, segs=None, out_file=None, mean_adj = None, std_adj = None):
     """
     process adj matrix.
     **The resulting matrix is sorted by id **
@@ -1089,8 +1095,10 @@ def prep_adj_matrix(infile, dist_type, dist_idx_name, segs=None, out_file=None):
     adj = sort_dist_matrix(adj, adj_matrices[dist_idx_name], segs=segs)
     adj = np.where(np.isinf(adj), 0, adj)
     adj = -adj
-    mean_adj = np.mean(adj[adj != 0])
-    std_adj = np.std(adj[adj != 0])
+    
+    if not (mean_adj and std_adj):
+        mean_adj = np.mean(adj[adj != 0])
+        std_adj = np.std(adj[adj != 0])
     adj[adj != 0] = adj[adj != 0] - mean_adj
     adj[adj != 0] = adj[adj != 0] / std_adj
     adj[adj != 0] = 1 / (1 + np.exp(-adj[adj != 0]))
@@ -1103,7 +1111,7 @@ def prep_adj_matrix(infile, dist_type, dist_idx_name, segs=None, out_file=None):
     A_hat = np.matmul(D_inv, A_hat)
     if out_file:
         np.savez_compressed(out_file, dist_matrix=A_hat)
-    return A_hat
+    return A_hat, mean_adj, std_adj
 
 
 def read_exclude_segs_file(exclude_file):
