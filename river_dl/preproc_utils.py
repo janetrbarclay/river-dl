@@ -982,7 +982,8 @@ def prep_all_data(
             infile=distfile,
             dist_type=dist_type,
             dist_idx_name=dist_idx_name,
-            segs=segs,
+            #segs=segs,
+            segs = np.unique(np.concatenate([x_data_dict['ids_trn'],x_data_dict['ids_val'],x_data_dict['ids_tst']])),
             mean_adj = dist_mean,
             std_adj = dist_std
         )
@@ -1066,6 +1067,15 @@ def prep_all_data(
         raise Warning("No y_dataset data was provided")
 
     all_data = {**x_data_dict, **y_obs_data, **y_pre_data}
+
+    #add the y_mean and y_std, if they weren't calculated and were passed in
+    if not "y_mean" in all_data.keys() and y_mean:
+        all_data['y_mean']=y_mean
+    if not "y_std" in all_data.keys() and y_std:
+        all_data['y_std'] = y_std
+    if not "y_obs_vars" in all_data.keys() and y_vars_finetune:
+        all_data['y_obs_vars'] = y_vars_finetune   
+
     if out_file:
         np.savez_compressed(out_file, **all_data)
     return all_data
@@ -1079,7 +1089,8 @@ def sort_dist_matrix(mat, row_col_names, segs=None):
     if segs is not None:
         row_col_names = row_col_names.astype(type(segs[0]))
     df = pd.DataFrame(mat, columns=row_col_names, index=row_col_names)
-    if segs:
+    segs = [x for x in segs if x in df.index]
+    if np.any(segs):
         df = df[segs]
         df = df.loc[segs]
     df = df.sort_index(axis=0)
