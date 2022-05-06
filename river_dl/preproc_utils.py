@@ -72,9 +72,17 @@ def scale(dataset, std=None, mean=None):
     :param mean: [xr dataset] mean if scaling test data with dims
     :return: scaled data with original dims
     """
+    try:
+        print(mean.to_array().values)
+    except:
+        print(mean)
+    print(isinstance(mean,xr.Dataset))
+  
     if not isinstance(std, xr.Dataset) or not isinstance(mean, xr.Dataset):
         std = dataset.std(skipna=True)
         mean = dataset.mean(skipna=True)
+    print(mean.to_array().values)
+
     # adding small number in case there is a std of zero
     scaled = (dataset - mean) / (std + 1e-10)
     check_if_finite(std)
@@ -885,10 +893,10 @@ def prep_all_data(
         test_start_date,
         test_end_date,
     )
-
     x_trn_scl, x_std, x_mean = scale(x_trn,std=x_std,mean=x_mean)
-
     x_scl, _, _ = scale(x_data,std=x_std,mean=x_mean)
+
+    print(x_mean)
 
     if x_val:
         x_val_scl, _, _ = scale(x_val, std=x_std, mean=x_mean)
