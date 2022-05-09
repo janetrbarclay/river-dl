@@ -896,7 +896,6 @@ def prep_all_data(
     x_trn_scl, x_std, x_mean = scale(x_trn,std=x_std,mean=x_mean)
     x_scl, _, _ = scale(x_data,std=x_std,mean=x_mean)
 
-    print(x_mean)
 
     if x_val:
         x_val_scl, _, _ = scale(x_val, std=x_std, mean=x_mean)
@@ -1068,6 +1067,8 @@ def prep_all_data(
             exclude_file=exclude_file,
             normalize_y=normalize_y,
             y_type="pre",
+            y_mean = y_mean,
+            y_std = y_std,
             trn_offset = trn_offset,
             tst_val_offset = tst_val_offset
         )
@@ -1078,9 +1079,9 @@ def prep_all_data(
 
     #add the y_mean and y_std, if they weren't calculated and were passed in
     if not "y_mean" in all_data.keys() and y_mean:
-        all_data['y_mean']=y_mean
+        all_data['y_mean']=y_mean.to_array().values
     if not "y_std" in all_data.keys() and y_std:
-        all_data['y_std'] = y_std
+        all_data['y_std'] = y_std.to_array().values
     if not "y_obs_vars" in all_data.keys() and y_vars_finetune:
         all_data['y_obs_vars'] = y_vars_finetune   
 
