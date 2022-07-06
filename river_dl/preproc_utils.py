@@ -72,16 +72,10 @@ def scale(dataset, std=None, mean=None):
     :param mean: [xr dataset] mean if scaling test data with dims
     :return: scaled data with original dims
     """
-    try:
-        print(mean.to_array().values)
-    except:
-        print(mean)
-    print(isinstance(mean,xr.Dataset))
   
     if not isinstance(std, xr.Dataset) or not isinstance(mean, xr.Dataset):
         std = dataset.std(skipna=True)
         mean = dataset.mean(skipna=True)
-    print(mean.to_array().values)
 
     # adding small number in case there is a std of zero
     scaled = (dataset - mean) / (std + 1e-10)
