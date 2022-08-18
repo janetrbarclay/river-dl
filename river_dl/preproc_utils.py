@@ -6,6 +6,7 @@ import datetime
 import subprocess
 import shutil
 import os
+import warnings
 
 
 def saveRunLog(config,code_dir,outFile):
@@ -1067,7 +1068,8 @@ def prep_all_data(
             tst_val_offset = tst_val_offset
         )
     else:
-        raise Warning("No y_dataset data was provided")
+         warnings.warn("WARNING:   No y_dataset data was provided")
+#        raise Warning("No y_dataset data was provided")
 
     all_data = {**x_data_dict, **y_obs_data, **y_pre_data}
 
