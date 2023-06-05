@@ -34,6 +34,8 @@ def reshape_for_gwn(cat_data, keep_portion=None):
              'y_pre_full',
              'y_pre_trn']
 
+
+    files = [x for x in files if x in cat_data.files]
     cat_reshaped = {}
     for i in files:
         shapes_rdl = cat_data[i].shape
