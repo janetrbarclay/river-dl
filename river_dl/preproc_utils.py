@@ -153,7 +153,6 @@ def separate_trn_tst(
         dataset, time_idx_name, train_start_date, train_end_date
     )
 
-
     if val_start_date and val_end_date:
         val = sel_partition_data(
             dataset, time_idx_name, val_start_date, val_end_date

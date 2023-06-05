@@ -142,6 +142,7 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
     water_phi_high_pbm = []
    
     #get the phase and amplitude for air and water temps for each segment
+
     for i in range(len(thisData[spatial_idx_name])):
         thisSeg = thisData[spatial_idx_name][i].data
         waterDF = pd.DataFrame({time_idx_name:thisData[time_idx_name].values,'tave_water':thisData[water_temp_obs_col][:,i].values})
@@ -153,13 +154,16 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
         waterSum = waterDF.loc[~waterDF.tave_water.isnull(),['waterYear','tave_water']].groupby('waterYear',as_index=False).count()
         waterSum=waterSum[waterSum.tave_water>=300]
         waterDF = waterDF[waterDF.waterYear.isin(waterSum.waterYear)]
-
+        print(thisData)
+        print(waterDF.head())
 
         thisData = thisData.assign_coords(
     waterYear=(time_idx_name, [x.year if x.month < 10 else (x.year+1) for x in pd.Series(thisData[time_idx_name].values) ]))
         
         
         if waterSum.shape[0]>0 and thisSeg not in reservoirSegs:
+            print(waterDF.head())
+            print(thisData)
             amp, phi, amp_low, amp_high, phi_low, phi_high, Tmean = amp_phi(thisData[time_idx_name].values[thisData.waterYear.isin(waterSum.waterYear)],thisData[air_temp_col][:,i].values[thisData.waterYear.isin(waterSum.waterYear)],isWater=False)
             air_amp.append(amp)
             air_amp_low.append(amp_low)
@@ -359,9 +363,11 @@ def prep_annual_signal_data(
         test_end_date)
 
     #get the annual signal properties for the training, validation, and testing data
-    GW_trn = annual_temp_stats(obs_trn, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
-    GW_tst = annual_temp_stats(obs_tst, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
-    GW_val = annual_temp_stats(obs_val, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
+    GW_trn = annual_temp_stats(obs_trn, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
+    if test_start_date:
+        GW_tst = annual_temp_stats(obs_tst, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
+    if val_start_date:
+        GW_val = annual_temp_stats(obs_val, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
 
     
     #scale the Ar_obs & delPhi_obs
@@ -369,16 +375,18 @@ def prep_annual_signal_data(
     GW_trn_scale['Ar_obs'] = (GW_trn['Ar_obs']-np.nanmean(GW_trn['Ar_obs']))/np.nanstd(GW_trn['Ar_obs'])
     GW_trn_scale['delPhi_obs'] = (GW_trn['delPhi_obs']-np.nanmean(GW_trn['delPhi_obs']))/np.nanstd(GW_trn['delPhi_obs'])
     GW_trn_scale['Tmean_obs'] = (GW_trn['Tmean_obs']-np.nanmean(GW_trn['Tmean_obs']))/np.nanstd(GW_trn['Tmean_obs'])
-    
-    GW_val_scale = deepcopy(GW_val)
-    GW_val_scale['Ar_obs'] = (GW_val_scale['Ar_obs']-np.nanmean(GW_trn['Ar_obs']))/np.nanstd(GW_trn['Ar_obs'])
-    GW_val_scale['delPhi_obs'] = (GW_val_scale['delPhi_obs']-np.nanmean(GW_trn['delPhi_obs']))/np.nanstd(GW_trn['delPhi_obs'])
-    GW_val_scale['Tmean_obs'] = (GW_val_scale['Tmean_obs']-np.nanmean(GW_trn['Tmean_obs']))/np.nanstd(GW_trn['Tmean_obs'])
-    
-    GW_tst_scale = deepcopy(GW_tst)
-    GW_tst_scale['Ar_obs'] = (GW_tst_scale['Ar_obs']-np.nanmean(GW_trn['Ar_obs']))/np.nanstd(GW_trn['Ar_obs'])
-    GW_tst_scale['delPhi_obs'] = (GW_tst_scale['delPhi_obs']-np.nanmean(GW_trn['delPhi_obs']))/np.nanstd(GW_trn['delPhi_obs'])
-    GW_tst_scale['Tmean_obs'] = (GW_tst_scale['Tmean_obs']-np.nanmean(GW_trn['Tmean_obs']))/np.nanstd(GW_trn['Tmean_obs'])
+
+    if val_start_date:    
+        GW_val_scale = deepcopy(GW_val)
+        GW_val_scale['Ar_obs'] = (GW_val_scale['Ar_obs']-np.nanmean(GW_trn['Ar_obs']))/np.nanstd(GW_trn['Ar_obs'])
+        GW_val_scale['delPhi_obs'] = (GW_val_scale['delPhi_obs']-np.nanmean(GW_trn['delPhi_obs']))/np.nanstd(GW_trn['delPhi_obs'])
+        GW_val_scale['Tmean_obs'] = (GW_val_scale['Tmean_obs']-np.nanmean(GW_trn['Tmean_obs']))/np.nanstd(GW_trn['Tmean_obs'])
+
+    if test_start_date:    
+        GW_tst_scale = deepcopy(GW_tst)
+        GW_tst_scale['Ar_obs'] = (GW_tst_scale['Ar_obs']-np.nanmean(GW_trn['Ar_obs']))/np.nanstd(GW_trn['Ar_obs'])
+        GW_tst_scale['delPhi_obs'] = (GW_tst_scale['delPhi_obs']-np.nanmean(GW_trn['delPhi_obs']))/np.nanstd(GW_trn['delPhi_obs'])
+        GW_tst_scale['Tmean_obs'] = (GW_tst_scale['Tmean_obs']-np.nanmean(GW_trn['Tmean_obs']))/np.nanstd(GW_trn['Tmean_obs'])
 
     
     #add the GW data to the y_dataset dataset
@@ -389,15 +397,19 @@ def prep_annual_signal_data(
     temp_mean = data['y_mean'][temp_index]
     temp_sd = data['y_std'][temp_index]
     num_task = len(data['y_obs_vars'])
-    temp_air_index = np.where(data['x_vars']=='seg_tave_air')[0]
+    temp_air_index = np.where(data['x_vars']==air_temp_col)[0]
     
     data['GW_trn_reshape']=make_GW_dataset(GW_trn_scale,obs_trn.sel({time_idx_name:slice(np.min(np.unique(preppedData['times_trn'])), np.max(np.unique(preppedData['times_trn'])))}),gwVarList,data['times_trn'],data['ids_trn'], data['x_trn'][:,:,temp_air_index]*data['x_std'][temp_air_index] +data['x_mean'][temp_air_index], data['y_obs_trn'],temp_index, temp_mean, temp_sd, gw_mean=np.nanmean(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), gw_std=np.nanstd(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), num_task = num_task, offset=trn_offset,metric_method=metric_method, spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
-    data['GW_tst_reshape']=make_GW_dataset(GW_tst_scale,obs_tst.sel({time_idx_name:slice(np.min(np.unique(preppedData['times_tst'])), np.max(np.unique(preppedData['times_tst'])))}),gwVarList,data['times_tst'],data['ids_tst'], data['x_tst'][:,:,temp_air_index]*data['x_std'][temp_air_index] +data['x_mean'][temp_air_index], data['y_obs_tst'],temp_index, temp_mean, temp_sd, gw_mean=np.nanmean(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), gw_std=np.nanstd(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), num_task = num_task, offset=tst_val_offset,metric_method=metric_method, spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
-    data['GW_val_reshape']=make_GW_dataset(GW_val_scale,obs_val.sel({time_idx_name:slice(np.min(np.unique(preppedData['times_val'])), np.max(np.unique(preppedData['times_val'])))}),gwVarList,data['times_val'],data['ids_val'], data['x_val'][:,:,temp_air_index]*data['x_std'][temp_air_index] +data['x_mean'][temp_air_index], data['y_obs_val'],temp_index, temp_mean, temp_sd, gw_mean=np.nanmean(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), gw_std=np.nanstd(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), num_task = num_task, offset=tst_val_offset,metric_method=metric_method, spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
+    if test_start_date:
+        data['GW_tst_reshape']=make_GW_dataset(GW_tst_scale,obs_tst.sel({time_idx_name:slice(np.min(np.unique(preppedData['times_tst'])), np.max(np.unique(preppedData['times_tst'])))}),gwVarList,data['times_tst'],data['ids_tst'], data['x_tst'][:,:,temp_air_index]*data['x_std'][temp_air_index] +data['x_mean'][temp_air_index], data['y_obs_tst'],temp_index, temp_mean, temp_sd, gw_mean=np.nanmean(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), gw_std=np.nanstd(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), num_task = num_task, offset=tst_val_offset,metric_method=metric_method, spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
+        data['GW_tst']=GW_tst
 
-    data['GW_tst']=GW_tst
+    if val_start_date:
+        data['GW_val_reshape']=make_GW_dataset(GW_val_scale,obs_val.sel({time_idx_name:slice(np.min(np.unique(preppedData['times_val'])), np.max(np.unique(preppedData['times_val'])))}),gwVarList,data['times_val'],data['ids_val'], data['x_val'][:,:,temp_air_index]*data['x_std'][temp_air_index] +data['x_mean'][temp_air_index], data['y_obs_val'],temp_index, temp_mean, temp_sd, gw_mean=np.nanmean(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), gw_std=np.nanstd(GW_trn[['Ar_obs','delPhi_obs','Tmean_obs']],axis=0), num_task = num_task, offset=tst_val_offset,metric_method=metric_method, spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name)
+        data['GW_val']=GW_val
+
+
     data['GW_trn']=GW_trn
-    data['GW_val']=GW_val
     data['GW_vars']=gwVarList
     data['gw_loss_type']=gw_loss_type
     data['GW_cols']=GW_trn.columns.values.astype('str')
