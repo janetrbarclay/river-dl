@@ -77,6 +77,7 @@ def scale(dataset, std=None, mean=None):
         mean = dataset.mean(skipna=True)
     # adding small number in case there is a std of zero
     scaled = (dataset - mean) / (std + 1e-10)
+
     check_if_finite(std)
     check_if_finite(mean)
     return scaled, std, mean
@@ -295,7 +296,7 @@ def split_into_batches(data_array, seq_len=365, offset=1.0,
     return combined
 
 
-def read_obs(obs_file, y_vars, x_data):
+def read_obs(obs_file, y_vars, x_data,spatial_idx_name="seg_id_nat"):
     """
     read and format multiple observation files. we read in the pretrain data to
     make sure we have the same indexing.
@@ -760,7 +761,7 @@ def prep_y_data(
         y_mean = xr.Dataset(dict(zip(y_vars,y_mean)))
         y_std = xr.Dataset(dict(zip(y_vars,y_std)))
 
-    y_data = read_obs(y_data_file, y_vars, x_data)
+    y_data = read_obs(y_data_file, y_vars, x_data, spatial_idx_name)
 
     y_trn, y_val, y_tst = separate_trn_tst(
         y_data,
@@ -772,7 +773,6 @@ def prep_y_data(
         test_start_date,
         test_end_date,
     )
-
 
     # replace trn, val and tst sites' data with np.nan
     if train_sites:
@@ -808,6 +808,7 @@ def prep_y_data(
     if log_vars:
         y_trn = log_variables(y_trn, log_vars)
 
+ 
     # scale y_dataset training data and get the mean and std
     # scale the validation partition to benchmark epoch performance
     if normalize_y:
@@ -1400,8 +1401,8 @@ def check_partitions(data, y, pre=False):
         df_tst = None
     
     #When the data are aggregated into a single dataframe
-    # there should be no duplicated rows
-    df = pd.concat([df_trn, df_val, df_tst])
+    # there should be no duplicated across rows (but duplicates may exist in partitions with keep_fraction !=1)
+    df = pd.concat([df_trn.drop_duplicates(), df_val.drop_duplicates(), df_tst.drop_duplicates()])
     duplicate_rows = df.duplicated(keep=False)
     if any(duplicate_rows == True):
         print(df.loc[duplicate_rows])
