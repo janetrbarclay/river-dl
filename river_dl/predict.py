@@ -160,11 +160,12 @@ def predict(
     :return: out predictions
     """
     num_segs = len(np.unique(pred_ids))
-
     if issubclass(type(model), torch.nn.Module):
         if len(x_data.shape) > 3: #Catch for dealing with different GraphWaveNet vs RGCN output, consider changing to bool argument
             y_pred = predict_torch(x_data, model, batch_size=5)
             y_pred=y_pred.transpose(1,3)
+            if pad_mask is not None:
+                pad_mask = np.transpose(pad_mask,(0,3,2,1))
             pred_ids = np.transpose(pred_ids,(0,3,2,1))
             pred_dates=np.transpose(pred_dates,(0,3,2,1))
         else:
@@ -176,6 +177,7 @@ def predict(
     
     #set to nan the data that were added to fill batches
     if pad_mask is not None:
+        pad_mask = torch.tensor(pad_mask)
         y_pred[pad_mask] = np.nan
     
     # keep only specified part of predictions
