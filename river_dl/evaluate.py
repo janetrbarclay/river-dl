@@ -516,11 +516,11 @@ def combined_metrics(
 
     if not pred_data:
         pred_data = {}
-        if pred_trn:
+        if pred_trn is not None:
             pred_data['trn'] = pred_trn
-        if pred_val:
+        if pred_val is not None:
             pred_data['val'] = pred_val
-        if pred_tst:
+        if pred_tst is not None:
             pred_data['tst'] = pred_tst
 
     if not pred_data:
