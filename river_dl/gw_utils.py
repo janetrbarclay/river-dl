@@ -154,16 +154,12 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
         waterSum = waterDF.loc[~waterDF.tave_water.isnull(),['waterYear','tave_water']].groupby('waterYear',as_index=False).count()
         waterSum=waterSum[waterSum.tave_water>=300]
         waterDF = waterDF[waterDF.waterYear.isin(waterSum.waterYear)]
-        print(thisData)
-        print(waterDF.head())
 
         thisData = thisData.assign_coords(
     waterYear=(time_idx_name, [x.year if x.month < 10 else (x.year+1) for x in pd.Series(thisData[time_idx_name].values) ]))
         
         
         if waterSum.shape[0]>0 and thisSeg not in reservoirSegs:
-            print(waterDF.head())
-            print(thisData)
             amp, phi, amp_low, amp_high, phi_low, phi_high, Tmean = amp_phi(thisData[time_idx_name].values[thisData.waterYear.isin(waterSum.waterYear)],thisData[air_temp_col][:,i].values[thisData.waterYear.isin(waterSum.waterYear)],isWater=False)
             air_amp.append(amp)
             air_amp_low.append(amp_low)
@@ -173,14 +169,23 @@ def annual_temp_stats(thisData, water_temp_pbm_col = 'seg_tave_water_pbm', water
             air_phi_high.append(phi_high)
 
             #get the process-based model (pbm) water temp properties
-            amp, phi, amp_low, amp_high, phi_low, phi_high, Tmean = amp_phi(thisData[time_idx_name].values[thisData.waterYear.isin(waterSum.waterYear)],thisData[water_temp_pbm_col][:,i].values[thisData.waterYear.isin(waterSum.waterYear)],isWater=True)
-            water_amp_pbm.append(amp)
-            water_amp_low_pbm.append(amp_low)
-            water_amp_high_pbm.append(amp_high)
-            water_phi_pbm.append(phi)
-            water_phi_low_pbm.append(phi_low)
-            water_phi_high_pbm.append(phi_high)
-            water_mean_pbm.append(Tmean)
+            if water_temp_pbm_col is not None:
+                amp, phi, amp_low, amp_high, phi_low, phi_high, Tmean = amp_phi(thisData[time_idx_name].values[thisData.waterYear.isin(waterSum.waterYear)],thisData[water_temp_pbm_col][:,i].values[thisData.waterYear.isin(waterSum.waterYear)],isWater=True)
+                water_amp_pbm.append(amp)
+                water_amp_low_pbm.append(amp_low)
+                water_amp_high_pbm.append(amp_high)
+                water_phi_pbm.append(phi)
+                water_phi_low_pbm.append(phi_low)
+                water_phi_high_pbm.append(phi_high)
+                water_mean_pbm.append(Tmean)
+            else:
+                water_amp_pbm.append(np.nan)
+                water_amp_low_pbm.append(np.nan)
+                water_amp_high_pbm.append(np.nan)
+                water_phi_pbm.append(np.nan)
+                water_phi_low_pbm.append(np.nan)
+                water_phi_high_pbm.append(np.nan)
+                water_mean_pbm.append(np.nan)
 
 
             #get the observed water temp properties
@@ -325,14 +330,15 @@ def prep_annual_signal_data(
     
     #read in the SNTemp data
     ds_pre = xr.open_zarr(pretrain_file)
-    
+    #ds_pre[spatial_idx_name]=ds_pre[spatial_idx_name].astype(float).astype(int)   
+ 
     if segs:
         ds_pre = ds_pre.loc[{spatial_idx_name:segs}]
 
     #read in the observed temperature data and join to the SNTemp data
     obs = [ds_pre.sortby([spatial_idx_name,time_idx_name])]
     tempFile = xr.open_zarr(obs_temper_file)
-    tempFile[spatial_idx_name]=tempFile[spatial_idx_name].astype(int)
+    #tempFile[spatial_idx_name]=tempFile[spatial_idx_name].astype(int)
     obs.append(tempFile)
     
     #using an outer join keeps all data, but requires the assumption that the air temp properties from PRMS (WY1981 - 2016) were valid for WY 2017-2020
@@ -363,11 +369,11 @@ def prep_annual_signal_data(
         test_end_date)
 
     #get the annual signal properties for the training, validation, and testing data
-    GW_trn = annual_temp_stats(obs_trn, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
+    GW_trn = annual_temp_stats(obs_trn, water_temp_pbm_col=water_temp_pbm_col,reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
     if test_start_date:
-        GW_tst = annual_temp_stats(obs_tst, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
+        GW_tst = annual_temp_stats(obs_tst, water_temp_pbm_col=water_temp_pbm_col,reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
     if val_start_date:
-        GW_val = annual_temp_stats(obs_val, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
+        GW_val = annual_temp_stats(obs_val, water_temp_pbm_col=water_temp_pbm_col, reservoirSegs=reservoirSegs,spatial_idx_name=spatial_idx_name, time_idx_name=time_idx_name,air_temp_col = air_temp_col)
 
     
     #scale the Ar_obs & delPhi_obs
@@ -659,7 +665,7 @@ def calc_pred_ann_temp(GW_data,trn_data,tst_data, val_data,trn_output, tst_outpu
     gw_stats_tst.to_csv(tst_output)
     gw_stats_val.to_csv(val_output)
     
-def calc_gw_metrics(trnFile,tstFile,valFile,outFile,figFile1, figFile2, pbm_name = "SNTemp", spatial_idx_name='seg_id_nat'):
+def calc_gw_metrics(trnFile,tstFile,valFile,outFile,figFile1, figFile2, pbm_name = "SNTemp", spatial_idx_name='seg_id_nat', water_temp_pbm_col = 'seg_tave_water'):
     """
     summarizeds GW metrics across all data partitions and creates summary figures
     :param trnFile,tstFile,valFile: [str] input files for the calculated metrics for the training, testing, and validation partitions(csv)
@@ -693,12 +699,14 @@ def calc_gw_metrics(trnFile,tstFile,valFile,outFile,figFile1, figFile2, pbm_name
                 resultsDF = tempDF
             else:
                 resultsDF = resultsDF.append(tempDF,ignore_index=True)
-                
-            tempDF = pd.DataFrame(calc_metrics(thisData[["{}_obs".format(thisVar),"{}_pbm".format(thisVar)]].rename(columns={"{}_obs".format(thisVar):"obs","{}_pbm".format(thisVar):"pred"}))).T
-            tempDF['variable']=thisVar
-            tempDF['partition']=partition
-            tempDF['model']=pbm_name
-            resultsDF = resultsDF.append(tempDF,ignore_index=True)
+
+            
+            if water_temp_pbm_col is not None:
+                tempDF = pd.DataFrame(calc_metrics(thisData[["{}_obs".format(thisVar),"{}_pbm".format(thisVar)]].rename(columns={"{}_obs".format(thisVar):"obs","{}_pbm".format(thisVar):"pred"}))).T
+                tempDF['variable']=thisVar
+                tempDF['partition']=partition
+                tempDF['model']=pbm_name
+                resultsDF = resultsDF.append(tempDF,ignore_index=True)
                 
     resultsDF.to_csv(outFile,header=True, index=False)
     
