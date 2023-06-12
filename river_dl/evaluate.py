@@ -155,7 +155,6 @@ def calc_metrics(df):
     if len(obs) > 10:
         metrics = {
             "rmse": rmse_eval(obs, pred),
-            "nse": nse_eval(obs, pred),
             "rmse_top10": percentile_metric(
                 obs, pred, rmse_eval, 90, less_than=False
             ),
@@ -170,17 +169,25 @@ def calc_metrics(df):
             "mean_bias_bot10": percentile_metric(
                 obs, pred, bias_eval, 10, less_than=True
             ),
+            "mean_bias_bot90": percentile_metric(
+                obs, pred, bias_eval, 90, less_than=True
+            ),
+            "nse": nse_eval(obs, pred),
             "nse_top10": percentile_metric(
                 obs, pred, nse_eval, 90, less_than=False
             ),
             "nse_bot10": percentile_metric(
                 obs, pred, nse_eval, 10, less_than=True
             ),
+            "nse_bot90": percentile_metric(
+                obs, pred, nse_eval, 90, less_than=True
+            ),
             "nse_logged": nse_logged(obs, pred),
             "kge": kge_eval(obs, pred),
-            "kge_logged": kge_logged(obs, pred),
             "kge_top10": percentile_metric(obs, pred, kge_eval, 90, less_than=False),
             "kge_bot10": percentile_metric(obs, pred, kge_eval, 10, less_than=True),
+            "kge_bot90": percentile_metric(obs, pred, kge_eval, 90, less_than=True),
+            "kge_logged": kge_logged(obs, pred),
             "n_obs": len(obs)
         }
     else:
