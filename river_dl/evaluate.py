@@ -193,20 +193,23 @@ def calc_metrics(df):
     else:
         metrics = {
             "rmse": np.nan,
-            "nse": np.nan,
             "rmse_top10": np.nan,
             "rmse_bot10": np.nan,
             "rmse_logged": np.nan,
             "mean_bias": np.nan,
             "mean_bias_top10": np.nan,
             "mean_bias_bot10": np.nan,
+            "mean_bias_bot90": np.nan,
+            "nse": np.nan,
             "nse_top10": np.nan,
             "nse_bot10": np.nan,
+            "nse_bot90": np.nan,
             "nse_logged": np.nan,
             "kge": np.nan,
-            "kge_logged": np.nan,
             "kge_top10": np.nan,
             "kge_bot10": np.nan,
+            "kge_bot90": np.nan,
+            "kge_logged": np.nan,
             "n_obs": len(obs)
         }
     return pd.Series(metrics)
