@@ -28,14 +28,14 @@ def reshape_for_gwn(cat_data, keep_portion=None):
              'ids_tst',
              'times_tst',
              'y_obs_trn',
-             'y_obs_wgts',
              'y_obs_val',
              'y_obs_tst',
              'y_pre_full',
-             'y_pre_trn']
+             'y_pre_trn',
+             'padded_trn',
+             'padded_val',
+             'padded_tst']
 
-
-    files = [x for x in files if x in cat_data.files]
     cat_reshaped = {}
     for i in files:
         shapes_rdl = cat_data[i].shape
